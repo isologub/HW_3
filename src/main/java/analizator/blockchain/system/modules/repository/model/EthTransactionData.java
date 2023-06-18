@@ -1,4 +1,4 @@
-package analizator.blockchain.system.modules;
+package analizator.blockchain.system.modules.repository.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

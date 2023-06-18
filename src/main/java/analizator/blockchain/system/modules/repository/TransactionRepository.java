@@ -1,6 +1,6 @@
 package analizator.blockchain.system.modules.repository;
 
-import analizator.blockchain.system.modules.EthTransactionData;
+import analizator.blockchain.system.modules.repository.model.EthTransactionData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,16 +1,17 @@
 package analizator.blockchain.system.modules.analizator;
 
-import analizator.blockchain.system.modules.EthTransactionData;
+import analizator.blockchain.system.modules.repository.model.EthTransactionData;
 import analizator.blockchain.system.modules.repository.TransactionRepository;
 import analizator.blockchain.system.modules.web.model.ChartView;
 import lombok.AllArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,23 +32,40 @@ public class EthAnalizatorImpl implements EthAnalizator {
         ZonedDateTime startOfDay = currentDateTime.with(LocalTime.MIN);
         ZonedDateTime endOfDay = currentDateTime.with(LocalTime.MAX);
 
-        List<EthTransactionData> entitiesForCurrentDay = transactionRepository.findEntitiesForCurrentDay(startOfDay.toInstant().toEpochMilli(), endOfDay.toInstant().toEpochMilli());
+        List<EthTransactionData> dataForCurrentDay = transactionRepository.findEntitiesForCurrentDay(startOfDay.toInstant().toEpochMilli(), endOfDay.toInstant().toEpochMilli());
 
-        Map<String, Double> transactionsSizeByPeriodForToday = getTransactionsSizeByPeriod(entitiesForCurrentDay);
+        Map<String, Double> transactionsSizeByPeriodForToday = getTransactionsSizeByPeriod(dataForCurrentDay);
+
+        Pair<List<String>, List<String>> sortedAverageTransactions = getSortedData(averageTransactions);
+        Pair<List<String>, List<String>> sortedTransactionsSizeByPeriodForToday = getSortedData(transactionsSizeByPeriodForToday);
 
         return ChartView.builder()
-                .averagePeriods(new ArrayList<>(averageTransactions.keySet()))
-                .averageTransactionsSize(averageTransactions.values().stream().map(Object::toString).collect(toList()))
-                .todayPeriods(new ArrayList<>(transactionsSizeByPeriodForToday.keySet()))
-                .todayTransactionsSize(transactionsSizeByPeriodForToday.values().stream().map(Object::toString).collect(toList()))
+                .averagePeriods(sortedAverageTransactions.getFirst())
+                .averageTransactionsSize(sortedAverageTransactions.getSecond())
+                .todayPeriods(sortedTransactionsSizeByPeriodForToday.getFirst())
+                .todayTransactionsSize(sortedTransactionsSizeByPeriodForToday.getSecond())
                 .build();
     }
 
-    @NotNull
-    private static Map<String, Double> getTransactionsSizeByPeriod(List<EthTransactionData> all) {
-        return all.stream()
+    private static Map<String, Double> getTransactionsSizeByPeriod(List<EthTransactionData> transactions) {
+        return transactions.stream()
                 .collect(groupingBy(EthTransactionData::getPeriod,
                         collectingAndThen(toList(), l -> l.stream()
                                 .collect(averagingInt(EthTransactionData::getTransactionsSize)))));
+    }
+
+    private Pair<List<String>, List<String>> getSortedData(Map<String, Double> unsortedData) {
+
+        List<String> keys = new ArrayList<>(unsortedData.keySet());
+        Collections.sort(keys);
+
+        List<Double> values = new ArrayList<>();
+        for (String key : keys) {
+            values.add(unsortedData.get(key));
+        }
+
+        return Pair.of(keys, values.stream()
+                .map(Object::toString)
+                .collect(toList()));
     }
 }
