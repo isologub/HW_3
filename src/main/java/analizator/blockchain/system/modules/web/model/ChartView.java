@@ -15,8 +15,8 @@ public class ChartView {
 
     private List<String> averagePeriods;
     private List<String> averageTransactionsSize;
-
     private List<String> todayPeriods;
     private List<String> todayTransactionsSize;
+    private Boolean blockChainStatus;
 
 }

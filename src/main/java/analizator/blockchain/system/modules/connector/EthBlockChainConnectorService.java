@@ -30,13 +30,11 @@ public class EthBlockChainConnectorService {
     public EthBlockChainConnectorService(TransactionRepository transactionRepository) throws IOException {
         web3j = Web3j.build(new HttpService(MAINNET_INFURA_IO_V_3_URL));
         startBlock = web3j.ethBlockNumber().send().getBlockNumber();
-        startBlock = startBlock.subtract(BigInteger.valueOf(20000));
         this.transactionRepository = transactionRepository;
 
     }
 
     @Scheduled(fixedDelay = 60_000)
-//    @Scheduled(fixedDelay = 60_000)
     public void getTransactionCount() throws IOException {
         BigInteger nextBlock = web3j.ethBlockNumber().send().getBlockNumber();
 

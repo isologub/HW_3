@@ -10,7 +10,7 @@
 
         .chart-container {
             width: 100%;
-            height: 500px;
+            height: 400px;
             margin-bottom: 20px; /* Добавляем отступ между графиками */
         }
     </style>
@@ -25,6 +25,10 @@
     <canvas id="averageChart"></canvas>
 </div>
 
+<div class="chart-container">
+    <h1 id="status"></h1>
+</div>
+
 </body>
 </html>
 
@@ -36,6 +40,16 @@
         const todayTransactionsSize = transaction.todayTransactionsSize;
         const averagePeriods = transaction.averagePeriods;
         const averageTransactionsSize = transaction.averageTransactionsSize;
+
+        var blockChainStatus = document.getElementById("status");
+
+        if (transaction.blockChainStatus) {
+            blockChainStatus.style.color = "green";
+            blockChainStatus.innerText = "Activity in the blockchain is normal";
+        } else {
+            blockChainStatus.style.color = "red";
+            blockChainStatus.innerText = "Abnormal activity detected!";
+        }
 
         new Chart(document.getElementById('todayChart').getContext('2d'), {
             type: 'line',

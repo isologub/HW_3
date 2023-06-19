@@ -1,7 +1,7 @@
 package analizator.blockchain.system.modules.analizator;
 
-import analizator.blockchain.system.modules.repository.model.EthTransactionData;
 import analizator.blockchain.system.modules.repository.TransactionRepository;
+import analizator.blockchain.system.modules.repository.model.EthTransactionData;
 import analizator.blockchain.system.modules.web.model.ChartView;
 import lombok.AllArgsConstructor;
 import org.springframework.data.util.Pair;
@@ -10,16 +10,16 @@ import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
 @Service
 @AllArgsConstructor
 public class EthAnalizatorImpl implements EthAnalizator {
+
+    private static final int PERCENTAGE_DIFF = 30;
+
     private final TransactionRepository transactionRepository;
 
     @Override
@@ -39,12 +39,21 @@ public class EthAnalizatorImpl implements EthAnalizator {
         Pair<List<String>, List<String>> sortedAverageTransactions = getSortedData(averageTransactions);
         Pair<List<String>, List<String>> sortedTransactionsSizeByPeriodForToday = getSortedData(transactionsSizeByPeriodForToday);
 
+        boolean blockChainStatus = getBlockChainStatus(averageTransactions, transactionsSizeByPeriodForToday);
+
         return ChartView.builder()
                 .averagePeriods(sortedAverageTransactions.getFirst())
                 .averageTransactionsSize(sortedAverageTransactions.getSecond())
                 .todayPeriods(sortedTransactionsSizeByPeriodForToday.getFirst())
                 .todayTransactionsSize(sortedTransactionsSizeByPeriodForToday.getSecond())
+                .blockChainStatus(blockChainStatus)
                 .build();
+    }
+
+    private boolean getBlockChainStatus(Map<String, Double> averageTransactions, Map<String, Double> transactionsSizeByPeriodForToday) {
+        return transactionsSizeByPeriodForToday.entrySet().stream()
+                .filter(e -> Objects.nonNull(averageTransactions.get(e.getKey())))
+                .allMatch((e) -> getBlockChainStatus(e.getValue(), averageTransactions.get(e.getKey())));
     }
 
     private static Map<String, Double> getTransactionsSizeByPeriod(List<EthTransactionData> transactions) {
@@ -67,5 +76,12 @@ public class EthAnalizatorImpl implements EthAnalizator {
         return Pair.of(keys, values.stream()
                 .map(Object::toString)
                 .collect(toList()));
+    }
+
+    private boolean getBlockChainStatus(Double todayTransactionSize, Double averageTransactionSize) {
+        double deviation = todayTransactionSize - averageTransactionSize;
+        double percentageIncrease = (Math.abs(deviation) / averageTransactionSize) * 100;
+
+        return !(percentageIncrease > PERCENTAGE_DIFF);
     }
 }
