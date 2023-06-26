@@ -10,23 +10,36 @@
 
         .chart-container {
             width: 100%;
-            height: 400px;
+            height: 300px;
             margin-bottom: 20px; /* Добавляем отступ между графиками */
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        #status {
+            text-align: center;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
+<div class="status-container">
+    <h1 id="status"></h1>
+</div>
 <div class="chart-container">
     <canvas id="todayChart"></canvas>
 </div>
 <div class="chart-container">
     <canvas id="averageChart"></canvas>
 </div>
-
 <div class="chart-container">
-    <h1 id="status"></h1>
+    <canvas id="standardDeviationChart"></canvas>
 </div>
 
 </body>
@@ -40,6 +53,8 @@
         const todayTransactionsSize = transaction.todayTransactionsSize;
         const averagePeriods = transaction.averagePeriods;
         const averageTransactionsSize = transaction.averageTransactionsSize;
+        const standardDeviationsPeriods = transaction.standardDeviationsPeriods;
+        const standardDeviations = transaction.standardDeviations;
 
         var blockChainStatus = document.getElementById("status");
 
@@ -54,7 +69,7 @@
         new Chart(document.getElementById('todayChart').getContext('2d'), {
             type: 'line',
             data: {
-                labels: todayPeriods, // Здесь можно указать метки оси X
+                labels: todayPeriods,
                 datasets: [{
                     label: 'Ethereum Daily Transactions Chart',
                     data: todayTransactionsSize,
@@ -69,14 +84,14 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Transactions size' // Название оси X
+                            text: 'Transactions size'
                         }
                     },
                     x: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Time (Hours)' // Название оси X
+                            text: 'Time (Hours)'
                         }
                     }
                 },
@@ -87,7 +102,7 @@
         new Chart(document.getElementById('averageChart').getContext('2d'), {
             type: 'line',
             data: {
-                labels: averagePeriods, // Здесь можно указать метки оси X
+                labels: averagePeriods,
                 datasets: [{
                     label: 'Ethereum Average Transactions Chart',
                     data: averageTransactionsSize,
@@ -102,14 +117,47 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Transactions size' // Название оси X
+                            text: 'Transactions size'
                         }
                     },
                     x: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Time (Hours)' // Название оси X
+                            text: 'Time (Hours)'
+                        }
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+
+        new Chart(document.getElementById('standardDeviationChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: standardDeviationsPeriods, // Здесь можно указать метки оси X
+                datasets: [{
+                    label: 'Standard Deviations Chart',
+                    data: standardDeviations,
+                    backgroundColor: 'purple',
+                    borderColor: 'purple',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Deviation'
+                        }
+                    },
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time (Hours)'
                         }
                     }
                 },
